@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./Frontend
+    container_name: veera_attendance_frontend
+    ports:
+      - "8089:80"
+    depends_on:
+      - backend
+    networks:
+      - veera_net
+
+  hr:
+    build:
+      context: ./HR
+    container_name: veera_attendance_hr
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    networks:
+      - veera_net
+
+  backend:
+    build:
+      context: ./Backend
+    container_name: veera_attendance_backend
+    ports:
+      - "3821:3821"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: veera_attendance_db
+      DB_USER: postgres
+      DB_PASSWORD: admin234
+      DB_NAME: attendance_system
+      DB_PORT: 5432
+    networks:
+      - veera_net
+
+  db:
+    image: postgres:13
+    container_name: veera_attendance_db
+    environment:
+      POSTGRES_DB: attendance_system
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin234
+    ports:
+      - "5855:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - veera_net
+
+volumes:
+  db_data:
+
+networks:
+  veera_net:
+    driver: bridge
+
